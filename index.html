@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title></title>
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/night.css" id="theme" />
+    <link rel="stylesheet" href="css/vs2015.css" />
+	<link rel="stylesheet" href="css/layout.css" />
+	<link rel="stylesheet" href="plugin/customcontrols/style.css">
+
+
+
+    <script defer src="dist/fontawesome/all.min.js"></script>
+
+	<script type="text/javascript">
+		var forgetPop = true;
+		function onPopState(event) {
+			if(forgetPop){
+				forgetPop = false;
+			} else {
+				parent.postMessage(event.target.location.href, "app://obsidian.md");
+			}
+        }
+		window.onpopstate = onPopState;
+		window.onmessage = event => {
+			if(event.data == "reload"){
+				window.document.location.reload();
+			}
+			forgetPop = true;
+		}
+
+		function fitElements(){
+			const itemsToFit = document.getElementsByClassName('fitText');
+			for (const item in itemsToFit) {
+				if (Object.hasOwnProperty.call(itemsToFit, item)) {
+					var element = itemsToFit[item];
+					fitElement(element,1, 1000);
+					element.classList.remove('fitText');
+				}
+			}
+		}
+
+		function fitElement(element, start, end){
+
+			let size = (end + start) / 2;
+			element.style.fontSize = `${size}px`;
+
+			if(Math.abs(start - end) < 1){
+				while(element.scrollHeight > element.offsetHeight){
+					size--;
+					element.style.fontSize = `${size}px`;
+				}
+				return;
+			}
+
+			if(element.scrollHeight > element.offsetHeight){
+				fitElement(element, start, size);
+			} else {
+				fitElement(element, size, end);
+			}		
+		}
+
+
+		document.onreadystatechange = () => {
+			fitElements();
+			if (document.readyState === 'complete') {
+				if (window.location.href.indexOf("?export") != -1){
+					parent.postMessage(event.target.location.href, "app://obsidian.md");
+				}
+				if (window.location.href.indexOf("print-pdf") != -1){
+					let stateCheck = setInterval(() => {
+						clearInterval(stateCheck);
+						window.print();
+					}, 250);
+				}
+			}
+	};
+
+
+        </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<style type="text/css">
+	:root {
+		--r-main-font-size: 1.25em;
+	}
+	blockquote p{
+		text-align: left;
+		padding: .25em .75em;
+	}
+	pre.code-wrapper {
+		display: block;
+		width: auto;
+		font-size: 1em;
+	}
+	.reveal .photo-label {
+		margin: 0;
+		font-size: 0.75em;
+		text-align:right;
+	}
+	.reveal img {
+		margin: 0;
+	}
+</style>
+# What's In Your \<head>? 
+## Defining and targeting link previews
+[cascadia-2025.gregle.dev](https://cascadia-2025.gregle.dev)
+
+👋 Justin Rastelli -- [gregle.dev](https://www.gregle.dev)
+</div>
+
+<aside class="notes"><p>Hey everyone, thanks for being here. So some context for this talk. At the start of the year I set out to better understand link previews. How to define them and to better understand the differences in how platforms handle them. Specifically I wanted to see if it was possible to show different preview content based on the platform the link had been posted to. And I learned that for the most part you can&#39;t target them like that. Except for one platform where, with the right set up, you can. And so today I&#39;m hoping to share some of those learnings.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## How do links show up around the web?
+<split even gap="1">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-space-needle.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Discord</p>
+</div>
+
+<!-- .element: style="max-width: 48%; margin: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-cascadia.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Signal</p>
+</div>
+
+<!-- .element: style="max-width: 48%; margin: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/text - android/android-messages-gregle.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Android</p>
+</div>
+
+<!-- .element: style="max-width: 48%; margin: auto" -->
+</split>
+</div>
+
+<aside class="notes"><p>By link previews, what I’m referring to is the small snippets that show up when you share a link in most modern messaging apps. They typically include a title, a short description, and maybe a thumbnail image. And each platforms seems to handle them differently. Here&#39;s a few examples of what I&#39;m referring to. These are incredibly useful for end users as they are both inviting and give some idea of what to expect before clicking on a link.</p>
+</aside></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<iframe width="100%" height="800" src="https://metatags.gregle.dev/basic/" frameborder="0" preload-data></iframe>
+
+https://metatags.gregle.dev/
+
+<div class="" style="position: absolute; left: 36%; top: 13%; height: 10%; width: 29%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+## Basic &lt;head&gt;
+</div>
+<div class="" style="position: absolute; left: 31%; top: 23%; height: 25%; width: 39%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+``` html
+<head>
+  <meta charset="utf-8"></meta>
+  <title>Basic HTML - Title</title>
+</head>
+```
+</div>
+</div>
+
+<aside class="notes"><p>As part of the effort to learn more about them, I set up a quick and dirty Svelte project. Where each route would have a different set up of meta tags defining ever more complex preview data, that I could then easily post to different platforms and compare the resulting link previews.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Basic \<head>
+
+
+``` html
+<head>
+  <meta charset="utf-8"></meta>
+  <title>Basic HTML - Title</title>
+</head>
+```
+</div>
+
+<aside class="notes"><p>To start I built the most basic setup I could think of: defining a title and specifying the character set.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Basic \<head>
+
+<split even gap="1" wrap="2">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-basic.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Signal</p>
+</div>
+
+<!-- .element: style="max-width: 48%" -->
+
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/bluesky/bluesky-basic.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Bluesky</p>
+</div>
+
+<!-- .element: style="max-width: 48%" -->
+
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/instagram - mobile/instagram-mobile-basic.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram (Mobile)</p>
+</div>
+
+ <!-- .element: style="max-width: 50%; margin: 0 auto" -->
+</split>
+</div>
+
+<aside class="notes"><p>And to no real surprise, the title shows up when the link is posted. One interesting thing I found was that web crawler for the instagram mobile app proactively parsed the topmost <code>&lt;p&gt;</code> element in order to populate its description field. This was especially interesting because, the Instagram desktop app never once rendered a description, regardless of how it was defined. This serves to show that even between different platform entry points there&#39;s a difference in implementation.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Adding A \<meta> Description
+
+``` html [3-7]
+<head>
+  <meta charset="utf-8" ></meta>
+  <title>Basic HTML - Title & Description</title>
+  <meta name="description" content="Basic w/ Description - Description.
+    It's an extra long description so you can see how
+    certain apps cut off the message at different points.
+    Surely the app has cut off by now right?"></meta>
+</head>
+```
+</div>
+
+<aside class="notes"><p>From the basic setup, I then added a simple <code>description</code> tag containing a short blurb about the page.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Adding A \<meta> Description
+
+<split even gap="1" wrap="2">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-basic-description.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Discord</p>
+</div>
+
+ <!-- .element: style="max-width: 48%" -->
+
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/bluesky/bluesky-basic-description.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Bluesky</p>
+</div>
+
+<!-- .element: style="max-width: 48%" -->
+
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/instagram - mobile/instagram-mobile-basic-description.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram (Mobile)</p>
+</div>
+
+ <!-- .element: style="max-width: 48%" -->
+
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-basic-description.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Signal</p>
+</div>
+
+<!-- .element: style="max-width: 48%" -->
+</split>
+</div>
+
+<aside class="notes"><p>The interesting learnings from this test was Bluesky and Discord preserved inline formatting, like newlines, when most other platforms ignored it. And then some apps, like signal, simply ignored the basic HTML tag for their description field entirely. And you can see instagram mobile is now using the defined description rather than the top most paragraph tag.</p>
+<p>And that about covers all of the base HTML spec ways to impact link previews. It&#39;s primarily just the title and description tags. For more interesting and complex setups we need to turn to The Open Graph Protocol.</p>
+</aside></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# The Open Graph (OG) Protocol
+
+<img src="Prezzies/Whats in your head/media/OG-logo.png" alt="" style="object-fit: scale-down">
+
+https://ogp.me/
+</div>
+
+<aside class="notes"><p>Defined by <a href="https://www.cnet.com/culture/facebook-f8-one-graph-to-rule-them-all/%5D">Facebook in 2010</a> this spec allows us to more thoroughly describe our page and content and has been widely adopted by most platforms and apps.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Basic OG Tags
+
+``` html [6-9]
+<head>
+  <meta charset="utf-8" ></meta>
+  <title>Basic Title</title>
+  <meta name="description" content="Getting started with Open Graph definitions"></meta>
+  <!-- ... -->
+  <meta property="og:type" content="website"></meta>
+  <meta property="og:title" content="OG:Basic - An introduction to Open Graph"></meta>
+  <meta property="og:description" content="Getting started with 
+  Open Graph definitions. Defining a type, a title, and a description."></meta>
+</head>
+```
+</div>
+
+<aside class="notes"><p>Here’s a basic example with an open graph implementation with the og prefix. There&#39;s a type tag, which defines the type of content we&#39;re sharing, in this case a website. And <code>title</code> and <code>description</code> tags which duplicate the base-level HTML meta tags but are prioritized over them when links are posted or shared via social media or in messages.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Basic OG Tags
+
+<split even gap="1" wrap="2">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/browsers/OG-Basics-Browser-Chrome.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Chrome</p>
+</div>
+
+<!-- .element: style="max-width: 30%; margin-left: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/browsers/OG-Basics-Browser-Firefox.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Firefox</p>
+</div>
+
+<!-- .element: style="max-width: 30%; margin-right: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-og-basic.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Discord</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-left: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/linkedin/linkedin-OG-basic.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">LinkedIn</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-right: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/instagram - mobile/instagram-mobile-og-basic.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram (Mobile)</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-left: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-og-basic.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Signal</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-right: auto" -->
+</split>
+</div>
+
+<aside class="notes"><p>From this setup it’s worth noting that the browser tabs will still use the standard HTML <code>title</code> tags while the link preview titles preference the open graph definitions. Allowing you to specify different titles for them and in your browser tabs. This cascading prioritization applies to most of these properties and can be incredibly useful as we&#39;ll see later on.</p>
+<p>Also note that, now signal is showing a proper description field based on the provided definition when before it was missing.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## OG:Image
+
+``` html  [12-17|12-13|14-16|17]
+<head>  
+  <meta charset="utf-8" ></meta>
+  <title>OG:Image</title>
+  <meta name="description" content="A good example of the most common
+  preview use case." ></meta>
+  <meta property="og:title" content="OG:Image - A common use case" ></meta>
+  <meta property="og:description" content="Expanding our basic Open Graph
+  definitions to include a preview image. Fun fact, you can make the image
+  anything you want!" ></meta>
+  <meta property="og:type" content="website" ></meta>
+  <!-- ... -->
+  <meta property="og:image"
+  content="https://assets.gregle.dev/projects/metatags/cool-zuck.jpg" ></meta>
+  <meta property="og:image:type" content="image/jpeg" ></meta>
+  <meta property="og:image:width" content="1200" ></meta>
+  <meta property="og:image:height" content="600" ></meta>
+  <meta property="og:image:alt" content="Marky-Zuck is such a cool boy" ></meta>
+</head>
+```
+</div>
+
+<aside class="notes"><p>Building on that basic setup we can add an image tag. This gets us our preview image and is one of the more useful Open Graph tags as there is no base HTML equivalent to it. We can also define extra information about our image, like height and width, and even alt text in the hopes the consuming platform supports such accessibility features.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## OG:Image
+
+<split even gap="1" wrap="2">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/bluesky/bluesky-OG-image.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">bluesky</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-left: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/text - android/android-messages-og-image.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">&nbsp;Android</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-right: auto; margin-top: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/linkedin/linkedin-OG-image.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">&nbsp;LinkedIn</p>
+</div>
+
+<!-- .element: style="max-width: 60%; margin: 0 auto" -->
+</split>
+</div>
+
+<aside class="notes"><p>It&#39;s important to note though, even with height and width definitions, you can&#39;t really control how the image will be rendered or where it&#39;ll cut off. So aim for flexibility and center its most important parts</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## OG:Image
+### And sometimes Gifs!
+
+<split even gap="1" wrap="3">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/instagram - mobile/instagram-mobile-leekspin.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram (Mobile)</p>
+</div>
+
+<!-- .element: style="max-width: 30%; margin: auto 0" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/linkedin/linkedin-leekspin.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label" style="margin-top:5px;">LinkedIn</p>
+</div>
+
+<!-- .element: style="max-width: 34%; margin: auto 0" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/text - android/android-leekspin.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Android</p>
+</div>
+
+<!-- .element: style="max-width: 30%; margin: auto 0" -->
+</split>
+</div>
+
+<aside class="notes"><p>You can even use gifs! But again support is entirely platform specific, so you&#39;ll want to make sure the first frame starts with something meaningful, as usually that&#39;s what&#39;s shown as fallback if there is no gif support.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## OG:Video
+``` html [15-18|12-13]
+<head>
+  <meta charset="utf-8" ></meta>
+  <title>OG:Video</title>
+  <meta name="description" content="A time lapse of the 2017 total solar
+  eclipse shot from eastern Oregon." ></meta>
+  <meta property="og:title"
+  content="OG:Video - The 2017 Total Eclipse" ></meta>
+  <meta property="og:description" content="A time lapse of the 2017 total
+   solar eclipse shot from eastern Oregon.
+   And demonstrating how more complex media types are handled by OG
+   preview links." ></meta>
+  <meta property="og:image"
+  content="https://assets.gregle.dev/timelapses/thumbs/eclipse.jpg" ></meta>
+  <!-- ... -->
+  <meta property="og:type" content="video.other" ></meta>
+  <meta property="og:video"
+  content="https://assets.gregle.dev/timelapses/eclipse.mp4" ></meta>
+  <meta property="og:video:type" content="video/mp4" ></meta>
+  <meta property="og:video:width" content="720" ></meta>
+  <meta property="og:video:height" content="720" ></meta>
+</head>
+```
+</div>
+
+<aside class="notes"><p>Along with images you can specify video content. Do note that you&#39;ll also want to include an image tag which will either be used as the video&#39;s poster, or as fallback if video playback is not supported.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 8%; top: 10%; height: 10%; width: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+## OG:Video
+</div>
+<div class="" style="position: absolute; left: 8%; top: 25%; height: 27%; width: 25%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/instagram/instagram-desktop-og-video.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram (Desktop)</p>
+</div>
+<div class="" style="position: absolute; left: 34%; top: 10%; height: 45%; width: 30%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-OG-Video.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Discord</p>
+</div>
+<div class="" style="position: absolute; left: 66%; top: 10%; height: 80%; width: 30%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-og-video.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Signal</p>
+</div>
+<div class="" style="position: absolute; left: 8%; top: 60%; height: 32%; width: 56%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/twitter/twitter-OG-vdeo.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Twitter</p>
+</div>
+</div>
+
+<aside class="notes"><p>In my testing, only Discord allowed direct video playback in the link preview while the rest fell back to the image tag. But You&#39;ll notice that Twitter is a special case here as it doesn&#39;t support the OG:Video tags for video playback, but it is able to play video directly in a preview via a different kind of meta tag setup. </p>
+<p>And that little aside, leads me perfectly to the one platform you can directly target the content of your link previews, and it also serves as the zombie to complete the Cranberries reference from the talk title.</p>
+</aside></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# ~~Twitter~~
+<split even >
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/dead-twitter.png" alt="" style="object-fit: scale-down">
+
+Src: [Teddy Lampert](https://readtheforum.org/staff_name/teddy-lampert/)
+</div>
+
+<!-- .element: style="font-size: 0.75em" -->
+</split>
+</div>
+
+<aside class="notes"><p>Twitter. Now twitter link previews are handled by a feature called Twitter Cards</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# ~~Twitter~~ Cards
+
+<split even gap="1">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/dead-twitter.png" alt="" style="object-fit: scale-down">
+
+Src:&nbsp;[Teddy Lampert](https://readtheforum.org/staff_name/teddy-lampert/)
+</div>
+
+<!-- .element: style="font-size: 0.75em; margin-left: 3em; text-align: right" -->
+
+<div class="block">
+
+<p>App Card</p><!-- .element: style="margin: auto 0 0 0" class="fragment" data-fragment-index="1" -->
+<p>Summary Cards</p><!-- .element: style="margin: 0" class="fragment" data-fragment-index="2" -->
+<p>Player Cards</p><!-- .element: style="margin: 0 0 auto 0" class="fragment" data-fragment-index="3" -->
+</div>
+
+<!-- .element: style="font-size: 1.5em; margin-bottom: 4.5rem; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start" align="left" -->
+</split>
+</div>
+
+<aside class="notes"><p>And they come in three varieties. App Cards, Summary Cards, and Player Cards. App cards are supposed to offer previews of downloadable mobile apps, except...</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# ~~Twitter~~ Cards
+
+<split even gap="1">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/dead-twitter.png" alt="" style="object-fit: scale-down">
+
+Src:&nbsp;[Teddy Lampert](https://readtheforum.org/staff_name/teddy-lampert/)
+</div>
+
+<!-- .element: style="font-size: 0.75em; margin-left: 3em; text-align: right" -->
+
+<div class="block">
+
+<p><s style="opacity: 50%">App Card</s> 🤷</p><!-- .element: style="margin: auto 0 0 0" -->
+<p>Summary Cards</p><!-- .element: style="margin: 0" -->
+<p>Player Cards</p><!-- .element: style="margin: 0 0 auto 0" -->
+</div>
+
+<!-- .element: style="font-size: 1.5em; margin-bottom: 4.5rem; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start" align="left" -->
+</split>
+</div>
+
+<aside class="notes"><p>...No one seems to care about them anymore. They seem to be a relic of a better time. Twitter&#39;s own documentation for them is just straight up broken and the only example I could find was a screenshot in a blog post from 2014. So instead we&#39;ll just skip them and go directly to Summary Cards.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Summary Cards
+
+``` html [1]
+<meta name="twitter:card" content="summary"></meta>  
+<meta name="twitter:image" content="https://i.imgur.com/xglyi.gif"></meta>
+<meta name="twitter:title"
+content="Twitter - summary test - Twitter Title"></meta>
+<meta name="twitter:description"
+content="Twitter - summary test - Twitter Description"></meta>
+```
+
+<split even style="width: 65%;">
+<img src="Prezzies/Whats in your head/media/twitter/twitter-summary-small.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Twitter</p>
+</split>
+</div>
+
+<aside class="notes"><p>These are the most common cards you&#39;ll see on the site and come in two flavors. Summary, which is the default look for any link posted to twitter…</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Summary Cards — Large Image
+
+``` html [1]
+<meta name="twitter:card" content="summary_large_image"></meta>  
+<meta name="twitter:image" content="https://i.imgur.com/xglyi.gif"></meta>
+<meta name="twitter:title"
+content="Twitter - summary test - Twitter Title"></meta>
+<meta name="twitter:description"
+content="Twitter - summary test - Twitter Description"></meta>
+```
+
+<split even style="width: 65%;">
+<img src="Prezzies/Whats in your head/media/twitter/twitter-summary-large.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Twitter</p>
+</split>
+</div>
+
+<aside class="notes"><p>…and summary large image. Which hides the description and prioritizes the preview image. So depending on how valuable a description is vs your preview image, you&#39;ll choose one style of summary card over the other.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Keep in Mind
+<split even gap="1" style="width: 55%;">
+<img src="Prezzies/Whats in your head/media/discord/discord-summary-small.gif" alt="" style="object-fit: scale-down">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-summary-large.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label" style="margin-top:-1em;">Discord</p>
+</split>
+</div>
+
+<aside class="notes"><p>But keep in mind, other apps can also key off of these meta tags. Like Discord for example. I actually think this makes the summary card, one of the more useful twitter specific tags, regardless of how much you care about accommodating the Twitter audience. As other platforms can also show a larger or smaller preview image depending on its value.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Targeting Content — Order Matters
+
+<split even gap="1" style="width: 55%;">
+<img src="Prezzies/Whats in your head/media/discord/discord-open-graph-on-top.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label" style="margin-top:-1em;">Discord - OG tags on top of Twitter tags</p>
+<img src="Prezzies/Whats in your head/media/discord/discord-twitter-on-top.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label" style="margin-top:-1em;">Discord - Twitter tags on top of OG tags</p>
+</split>
+</div>
+
+<aside class="notes"><p>Realizing that other platforms were looking at the twitter metatags too also taught me that order matters. The receiving web scrapper is entirely app specific and completely out of our hands. Depending on how it&#39;s implemented, it can take the first metatag it sees, or the last, or it could even alphabetize them first. For example, looking at Discord again with stacked title and description tags, it takes the top most defined tag on the page, regardless of open graph or twitter prefix.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Taking Advantage of Redundancy
+
+```html [13-17|6-11|19-24]
+<head>
+  <meta charset="utf-8" ></meta>
+  <title>Tagetting  ̶T̶w̶i̶t̶t̶e̶r̶ ̶ X.com</title>
+  <meta name="description" content="Another kind of meta tag"></meta>
+  <meta property="og:type" content="website"></meta>
+  <meta property="og:title" content="Twitter Meta Tags"></meta>
+  <meta property="og:description" content="Introducing The Twitter 
+  tags and demonstrating how you can use it to specifically target 
+  that cesspool of a social media site"></meta>
+  <meta property="og:image"
+  content="https://assets.gregle.dev/projects/metatags/break-kings.jpg"></meta>
+  <!-- ... -->
+  <meta name="twitter:card" content="summary_large_image"></meta>
+  <meta name="twitter:title" content="Delete your Twitter"></meta>
+  <meta name="twitter:description" content="Nothing good happens here"></meta>
+  <meta property="twitter:image"
+  content="https://assets.gregle.dev/projects/metatags/rip-twitter.png"></meta>
+  <!-- ... -->
+  <meta property="og:title" content="Twitter Meta Tags"></meta>
+  <meta property="og:description" content="Introducing The Twitter 
+  tags and demonstrating how you can use it to specifically target
+  that cesspool of a social media site"></meta>
+  <meta property="og:image"
+  content="https://assets.gregle.dev/projects/metatags/break-kings.jpg"></meta>
+</head>
+```
+</div>
+
+<aside class="notes"><p>But this variability in implementation actually creates an opportunity for us. As Twitter, always prioritizes their tag prefix over the more generic open graph tags.</p>
+<p>This means, if we structure our code correctly, we can show different content on twitter, than when our links are posted anywhere else on the web. By sandwiching the twitter metatags with duplicated open graph tags. I&#39;m ensuring any applications sniffing specifically for twitter content will receive and surface that twitter messaging.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 10%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+## Taking Advantage of Redundancy
+</div>
+<div class="" style="position: absolute; left: 5%; top: 12%; height: 45%; width: 20%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-twitter.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Signal</p>
+</div>
+<div class="" style="position: absolute; left: 27%; top: 12%; height: 45%; width: 25%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-twitter.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Discord</p>
+</div>
+
+<div class="" style="position: absolute; left: 55%; top: 12%; height: 45%; width: 43%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/bluesky/bluesky-twitter.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Bluesky</p>
+</div>
+
+<div class="" style="position: absolute; left: 18%; top: 62%; height: 32%; width: 30%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/instagram/instagram-desktop-twitter.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram Desktop</p>
+</div>
+
+<div class="" style="position: absolute; left: 51%; top: 62%; height: 33%; width: 38%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/twitter/twitter-twitter.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Twitter</p>
+</div><!-- .element: class="fragment fade-in" -->
+</div>
+
+<aside class="notes"><p>So now a link with this kind of setup, can then be posted and rendered one way on all other platforms. While rendering an entirely different message on twittter. And this concept works for other types of content too. Earlier I had mentioned there&#39;s a way to play video content directly in the twitter preview, well that brings us to the next type of card, the Player card.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Player Card — Video
+
+```html [20-30|21-22|5-19|32-42]
+  <meta charset="utf-8"></meta>
+  <title>Twitter Player</title>
+  <meta name="description" content="Dual timelapses of the Seattle
+  Waterfront before and after the viaduct removal"></meta>
+  <meta property="og:title" content="Seattle Waterfront Before & After"></meta>
+  <meta property="og:description"
+  content="Dual timelapses of the Seattle Waterfront before and after the
+  viaduct removal. And demonstrating how more complex media types are
+  handled by OG preview links."></meta>
+  <meta property="og:image"
+  content="https://assets.gregle.dev/timelapses/viaduct/preview.jpg"></meta>
+  <meta property="og:type" content="video.other"></meta>
+  <meta property="og:video"
+  content="https://assets.gregle.dev/timelapses/viaduct/Viaduct-embed.mp4"></meta>
+  <meta property="og:url" content="https://seattle-viaduct.gregle.dev/"></meta>
+  <meta property="og:video:type" content="video/mp4"></meta>
+  <meta property="og:video:width" content="1920"></meta>
+  <meta property="og:video:height" content="1080"></meta>
+  <!-- ... -->
+  <meta name="twitter:card" content="player"></meta>
+  <meta name="twitter:player"
+  content="https://meta-tester.pages.dev/punks-fo"></meta>
+  <meta name="twitter:title" content="Nazi Punks Fuck Off"></meta>
+  <meta name="twitter:description"
+  content="My Content is not for you. NAZI PUNKS FUCK OFF!"></meta>
+  <meta name="twitter:site" content="@elonmusk"></meta>
+  <meta name="twitter:image"
+  content="https://i.ytimg.com/vi/PzHLPnGuVSQ/maxresdefault.jpg"></meta>
+  <meta name="twitter:player:width" content="420"></meta>
+  <meta name="twitter:player:height" content="360"></meta>
+  <!-- ... -->
+  <meta property="og:title" content="Seattle Waterfront Before & After" ></meta>
+  <meta property="og:description" 
+  content="Dual timelapses of the Seattle Waterfront before and after the
+  viaduct removal. And demonstrating how more complex media types are
+  handled by OG preview links"></meta>
+  <meta property="og:image"
+  content="https://assets.gregle.dev/timelapses/viaduct/preview.jpg"></meta>
+  <meta property="og:video"
+  content="https://assets.gregle.dev/timelapses/viaduct/Viaduct-embed.mp4"></meta>
+  <meta property="og:video:width" content="1920"></meta>
+  <meta property="og:video:height" content="1080"></meta>
+```
+</div>
+
+<aside class="notes"><p>Essentially, the twitter player card is a non-scrolling iframe embedded within a tweet. It&#39;s a relatively simple implementation on their part, but an extremely flexible one to play with as developers. </p>
+<p>For example. Going off of the previous open graph video set up. If we point the iframe at a webpage with of a full screen video player, while again sandwiching the twitter tag between our open graph tags.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 10%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+## Player Card — Video
+</div>
+<div class="" style="position: absolute; left: 3%; top: 10%; height: 40%; width: 19%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-twitter-player.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Signal</p>
+</div>
+
+<div class="" style="position: absolute; left: 23%; top: 10%; height: 40%; width: 32%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/bluesky/bluesky-twitter-player.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Bluesky</p>
+</div>
+
+<div class="" style="position: absolute; left: 57%; top: 10%; height: 40%; width: 40%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-twitter-player.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Discord</p>
+</div>
+
+<div class="" style="position: absolute; left: 4%; top: 55%; height: 40%; width: 27%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/instagram - mobile/instagram-mobile-twitter-player.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram Mobile</p>
+</div>
+
+<div class="" style="position: absolute; left: 33%; top: 55%; height: 32%; width: 30%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/text - android/android-twitter-player.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Android Text</p>
+</div>
+
+<div class="" style="position: absolute; left: 65%; top: 55%; height: 40%; width: 31%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/twitter/twitter-twitter-player.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Twitter</p>
+</div><!-- .element: class="fragment fade-in" -->
+</div>
+
+<aside class="notes"><p>Instead of my before and after timelapses of the seattle water front, Twitter users who click play, are shown a live 1982 performance of Nazi Punks Fuck Off, by the Dead Kennedys. </p>
+<p>-- PAUSE --</p>
+<p>So all in all this sandwiching technique is fairly straight forward and was working great except for one small issue.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 20%; top: 0%; height: 100%; width: 60%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+## Teams 🤦‍♂️
+<img src="Prezzies/Whats in your head/media/teams/teams-twitter.png" alt="" style="object-fit: scale-down">
+
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/teams/teams-twitter-player.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Microsoft Teams</p>
+</div>
+
+<!-- .element: style="margin-top: .5em" -->
+</div>
+</div>
+
+<aside class="notes"><p>For reasons I don&#39;t understand, Microsoft Teams prioritizes the twitter meta tag above all other combinations of metadata. I have no idea why this is, I can&#39;t think of a good reason for it, and I&#39;ve asked why at least three separate times in the dev forums to no avail.</p>
+<p>So if anyone here knows some people on the Microsoft Teams… uh team… please ask them why they would do this.</p>
+<p>But I did eventually figure out a workaround for this issue.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Player Card — Web App
+
+``` html [7-11|13-17]
+<head> 
+  <meta charset="utf-8" ></meta>
+  <title>Teams Proofing The Troll</title>
+  <meta name="description" content="Limiting the twitter specific tags to
+  tags only twitter uses"></meta>
+  <meta property="og:type" content="website"></meta>
+  <meta property="og:title" content="A totally normal website"></meta>
+  <meta property="og:description" content="A totally normal website with
+  normal things for normal people"></meta>
+  <meta property="og:image"
+  content="https://assets.gregle.dev/projects/metatags/nothing-to-see.gif"></meta>
+  <!-- ... -->
+  <meta name="twitter:card" content="player"></meta>
+  <meta name="twitter:site" content="@elonmusk"></meta>
+  <meta name="twitter:player" content="https://stop-using-twitter.com/"></meta>
+  <meta name="twitter:player:width" content="420"></meta>
+  <meta name="twitter:player:height" content="420"></meta>
+</head>
+```
+</div>
+
+<aside class="notes"><p>You can avoid needing to sandwich your tags entirely so long as you only specify twitter specific functionality (IE the player card) in the twitter associated meta tags. In this example you can see I have my open graph tags, and then the content specific for twitter. There&#39;s no overlap between them, and no other platform has a concept of a player card, so with just five lines I&#39;m able to send specific messages to anyone who posts or interacts with my links on twitter.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 0%; top: 0%; height: 10%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+## Player Card — Web App
+</div>
+
+<div class="" style="position: absolute; left: 12%; top: 10%; height: 40%; width: 37%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/text - android/android-twitter-teams.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Android</p>
+</div>
+
+<div class="" style="position: absolute; left: 52%; top: 10%; height: 40%; width: 36%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/linkedin/linkedin-twiter-teams.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">LinkedIn</p>
+</div>
+
+<div class="" style="position: absolute; left: 4%; top: 55%; height: 40%; width: 33%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/bluesky/bluesky-twitter-teams.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Instagram Mobile</p>
+</div>
+
+<div class="" style="position: absolute; left: 40%; top: 55%; height: 40%; width: 25%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/signal/signal-twitter-teams.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Android Text</p>
+</div>
+
+<div class="" style="position: absolute; left: 68%; top: 55%; height: 40%; width: 28%; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right">
+
+<img src="Prezzies/Whats in your head/media/twitter/twitter-twitter-teams-2.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Twitter</p>
+</div><!-- .element: class="fragment fade-in" -->
+</div>
+
+<aside class="notes"><p>And again this looks one way on every other platform, but when a twitter user goes to open the player. The see an entirely different message. This time it&#39;s a more complex and interactive web app using three.js.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+<div class="" style="position: absolute; left: 20%; top: 0%; height: 100%; width: 60%; display: flex; flex-direction: column; align-items: center; justify-content: center" >
+
+## Teams 👍
+<img src="Prezzies/Whats in your head/media/teams/teams-viaduct.png" alt="" style="object-fit: scale-down">
+
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/teams/teams-twitter-teams-2.gif" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Microsoft Teams</p>
+</div>
+
+<!-- .element: style="margin-top: .5em" -->
+</div>
+</div>
+
+<aside class="notes"><p>all while teams users remain blissfully unaware of the secret twitter message. Also please ignore their broken gif rendering. That&#39;s Microsoft&#39;s bug to fix not mine and I&#39;m done coddling their messaging app at this point.</p>
+</aside></script></section></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Go build and share cool things!
+
+<img src="https://media1.tenor.com/m/VvsV4uE8LYoAAAAd/youhavethepower-he-man.gif" alt="image" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><p>I think my point with all this effort is that I hope you feel comfortable going out, building cool things, and knowing you can put your best foot forward when they get shared around. And that you can tell a few nazis to fuck off while you do.</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Useful Tools
+
+- [Facebook's Sharing Debugger](https://developers.facebook.com/tools/debug) - Preview how their scrapper will render your links/and force a cache refresh outside the standard 24-hour update period
+- [Twitter Card Validator]( https://cards-dev.x.com/validator) - Useful for testing your twitter based metadata. Card preview doesn't work though and has been moved to the tweet composer instead.
+- [Google's Schema Validator](https://validator.schema.org/) - Validate all Schema.org-based structured data that's embedded in web pages
+- [Google's Rich Result Tester](https://search.google.com/test/rich-results) - The official Google tool for testing your structured data to see which Google rich results can be generated by the [structured data](https://developers.google.com/search/docs/appearance/structured-data/search-gallery) on your page.
+- [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) - preview your preview and force a cache refresh
+</div>
+
+<aside class="notes"><p>here&#39;s some useful tools for testing and validating your own meta tags and link previews</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Useful Docs
+
+- [MDN Metatags](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name) - So many more meta tags to learn about!
+- [OpenGraph Docs](https://ogp.me/) - So many more Open Graph tags to learn about!
+- [Twitter Cards Docs](https://developer.x.com/en/docs/x-for-websites/cards/overview/abouts-cards) - TBH Elon fired all the people maintaining these...
+- [Schema.org](https://schema.org/) - Impact how search engines render your links
+</div>
+
+<aside class="notes"><p>here&#39;s some useful docs for learning more about link previews</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# Thank you💜
+[cascadia-2025.gregle.dev](https://cascadia-2025.gregle.dev)
+
+Justin Rastelli -- [gregle.dev](https://www.gregle.dev)
+</div>
+
+<aside class="notes"><p>And thank you, the slides can be found at this URL and on my website, and I hope you all build and share something that excites you soon. Thank you.</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# Extra Slides
+## In descending order of polished <!-- .element: class="fragment" data-fragment-index="1" -->
+</div></script></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## OG:Audio
+
+``` html  [12-15]
+<head>  
+  <meta charset="utf-8" ></meta>
+  <title>OG:Audio</title>
+  <meta name="description"
+  content="Demonstrating how OG Audio previews behave in preview links." ></meta>
+  <meta property="og:title" content="JOHN CENA!!!" ></meta>
+  <meta property="og:description" content="AND HIS NAME IS JOHN CENA!
+  *trumpets* *TRUMPETS* *trumpets* *trumpetssssss*" ></meta>
+  <meta property="og:image"
+  content="https://assets.gregle.dev/projects/metatags/confused-cena.jpg" ></meta>
+  <!-- ... -->
+  <meta property="og:type" content="music.song" ></meta>
+  <meta property="og:audio"
+  content="https://assets.gregle.dev/projects/metatags/JOHN-CENA.mp3" ></meta>
+  <meta property="og:audio:type" content="audio/mpeg" ></meta>
+</head>
+```
+</div>
+
+<aside class="notes"><p>But before we get to that, I have one last OG tag to highlight, the Audio tag. By now the structure should look pretty familiar.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## OG:Audio
+
+<split even gap="1" wrap="2">
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/bluesky/bluesky-OG-audio.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">bluesky</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-left: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/text - android/android-messagses-og-audio.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Android</p>
+</div>
+
+<!-- .element: style="max-width: 45%; margin-right: auto; margin-top: auto" -->
+<div class="block">
+
+<img src="Prezzies/Whats in your head/media/discord/discord-OG-Audio.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Discord</p>
+</div>
+
+<!-- .element: style="max-width: 60%; margin: 0 auto" -->
+</split>
+</div>
+
+<aside class="notes"><p>But ultimately I was super disappointed to find out none of the apps I was testing supported audio based previews. Instead, falling back to just the base images and descriptions. I was really hoping for some creativity here, but sadly no. </p>
+<p>Now let&#39;s get to the one zombie platform that both completes the Cranberries reference that is this talk&#39;s title and is the one platform we can target content to directly.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## App Cards
+nobody seems to care about them
+
+<img src="Prezzies/Whats in your head/media/twitter/App_card.png" alt="" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><p>We&#39;ll start with App cards because nobody seems to care about them. These are cards that are designed to direct a user to download a mobile app. I sourced this screenshot from a blog posted in 2014 because I couldn&#39;t find a live example anywhere.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## App Cards
+This is supposed to be an app card I guess???
+
+<split even style="width: 65%;">
+<img src="Prezzies/Whats in your head/media/twitter/twitter-app-cards.png" alt="" style="object-fit: scale-down">
+
+<p class="photo-label">Twitter</p>
+</split>
+</div>
+
+<aside class="notes"><p>And my attempts to implement on following twitter&#39;s own out of the box broken documentation about them yielded no results. So it seems to be a relic of the pre-appstore days. So let&#39;s just breeze right by and get straight into the much more interesting Twitter Summary Card.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Google's [Schema.org](https://schema.org/)
+
+<img src="Prezzies/Whats in your head/media/schema.png" alt="" style="object-fit: scale-down">
+
+<span>src: [Blog - What is Schema Markup?](https://www.wordstream.com/blog/ws/2021/09/15/what-is-schema-markup)</span><!-- .element: style="font-size: 0.75em" -->
+</div>
+
+<aside class="notes"><p>Another thing I want to touch on real quick is Google&#39;s Schema.org meta data. I&#39;m not going to go into depth about it here, but it&#39;s what you use to build those fancy search engine integrations that your product and sales coworkers are so excited about.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Open Graph Background
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->Defined by [Facebook in 2010](https://www.cnet.com/culture/facebook-f8-one-graph-to-rule-them-all/])
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->Used to describe the content your page contains or represents
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->Widely used by most platforms and applications
+</div>
+
+<aside class="notes"><p>Created and defined by Facebook in 2010 it was designed to expand their concept of the Social Graph to include external web content. The protocol is a specification for a set of metatags which can be used to mark up your pages to describe the types of content it contains or represents.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## `<head>`
+> The **Head** is the part of an [HTML](https://developer.mozilla.org/en-US/docs/Glossary/HTML) document that contains [metadata](https://developer.mozilla.org/en-US/docs/Glossary/Metadata) about that document, such as author, description, and links to [CSS](https://developer.mozilla.org/en-US/docs/Glossary/CSS) or [JavaScript](https://developer.mozilla.org/en-US/docs/Glossary/JavaScript) files that should be applied to the HTML.
+<span>[-- MDN Web Docs](https://developer.mozilla.org/en-US/docs/Glossary/Head)</span><!-- .element: style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right" -->
+</div>
+
+<aside class="notes"><p>Everybody loves a definition slide right? This is lifted directly from Mozilla, but essentially everything you see in a preview link is defined in the HTML&#39;s Head element. The head is an interesting place though because it&#39;s the only part of the doc with information that is more visible to users outside your page than to those actually on it. As it contains information about what&#39;s inside your page, how your page relates to other documents and sites, and how third party crawlers should expect to interact with it. So when analyzing a page browsers and web crawlers will parse the head element, plucking out relevant links and metadata in order to determine both what a page is about, and for the subject of this talk, how to present it in things like link previews.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Loading Tab
+code snippet and animated title gif (probably a page loading animation)
+</div>
+
+<aside class="notes"><p>and with javascript you can can get pretty fancy with it</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## FavIcon
+code snippet and screenshots (including a loading circle and the loading title snippet)
+</div>
+
+<aside class="notes"><p>you can also define a fav icon which will get consumed by anything that is looking for it. It doesn&#39;t even need to be an .ico, most modern browsers will accept any of the common image formats, and will even allow you to change it on the fly via javascript.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## More OG Tags
+
+- `og:audio` - A URL to an audio file to accompany this object.
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->`og:determiner` - The word that appears before this object's title in a sentence. An [enum](https://ogp.me/#enum) of (a, an, the, "", auto). If `auto` is chosen, the consumer of your data should choose between "a" or "an". Default is "" (blank).
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->`og:locale` - The locale these tags are marked up in. Of the format `language_TERRITORY`. Default is `en_US`.
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->`og:site_name` - If your object is part of a larger web site, the name which should be displayed for the overall site. e.g., "IMDb".
+</div>
+
+<aside class="notes"><p>here&#39;s a few other more uncommon tags, and I want to give a special shout out to the og audio tag which NONE of my test apps supported inline embedding like discord did for OG Video. You would think it&#39;d be straightforward to include an audio player in your preview card options, but I guess playing noise is more intrusive for your end user than I realize.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Elements that can be used inside the `<head>`
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->[`<title>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/title)
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->[`<base>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base)
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->[`<link>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link)
+- &shy;<!-- .element: class="fragment" data-fragment-index="4" -->[`<style>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/style)
+- &shy;<!-- .element: class="fragment" data-fragment-index="5" -->[`<meta>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta)
+- &shy;<!-- .element: class="fragment" data-fragment-index="6" -->[`<script>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script)
+- &shy;<!-- .element: class="fragment" data-fragment-index="7" -->[`<noscript>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/noscript)
+- &shy;<!-- .element: class="fragment" data-fragment-index="8" -->[`<template>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## `<script>` & `<styles>`
+
+``` html
+<head>
+  ...
+  <script>console.log('who needs external files anyway?);__SCRIPT_END__
+  <style>.goku.power-level{z-index: 9001;}</style>
+</head>
+```
+</div>
+
+<aside class="notes"><p>can also just write your scripts and styles right in the head document. This is useful if you don&#39;t want to make external requests or it&#39;s more efficient to bundle everything into a single document.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## `<script>`
+> The **`<script>`** [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) element is used to embed executable code or data; this is typically used to embed or refer to JavaScript code. The `<script>` element can also be used with other languages, such as [WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API)'s GLSL shader programming language and [JSON](https://developer.mozilla.org/en-US/docs/Glossary/JSON).<br></br>
+<span>[-- MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script)</span><!-- .element: style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right" -->
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Other `<script>` attributes
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->`async` - indicates if the script should be fetched in parallel to document parsing
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->`blocking`
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->`crossorigin`
+- &shy;<!-- .element: class="fragment" data-fragment-index="4" -->`defer` - execute the script after the document has been parsed but before `DOMContentLoaded` event is fired
+- &shy;<!-- .element: class="fragment" data-fragment-index="5" -->`fetchpriority`
+- &shy;<!-- .element: class="fragment" data-fragment-index="6" -->`integrity`
+- &shy;<!-- .element: class="fragment" data-fragment-index="7" -->`nomodule` - only execute in browsers that don't support modular javascript
+- &shy;<!-- .element: class="fragment" data-fragment-index="8" -->`nonce` - a cryptographic nonce (number used once) to tell browsers the inline contents of a particular script or style element weren’t injected into the document by some (malicious) third party,
+- &shy;<!-- .element: class="fragment" data-fragment-index="9" -->`referrerpolicy` - Indicates which [referrer](https://developer.mozilla.org/en-US/docs/Web/API/Document/referrer) to send when fetching the script, or resources fetched by the script
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## `<noscript>`
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Basic `<link>`
+
+``` html
+<head>
+  ...
+  <link rel="stylesheet" href="super-cool.css" ></link>
+</head>
+```
+
+> The **`<link>`** [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML) element specifies relationships between the current document and an external resource. This element is most commonly used to link to [stylesheets](https://developer.mozilla.org/en-US/docs/Glossary/CSS), but is also used to establish site icons (both "favicon" style icons and icons for the home screen and apps on mobile devices) among other things.
+> <br></br>
+<span>[-- MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link)</span><!-- .element: style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right" -->
+</div>
+
+<aside class="notes"><p>The link element specifies relationships between your document and external ones. The relationship is defined with the rel attribute and referenced via href.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Advanced `<link>`s
+``` html
+<link rel="stylesheet" href="default.css" ></link>
+
+<!-- alternate style sheets -->
+<link
+  rel="alternate stylesheet"
+  href="highcontrast.css"
+  title="High contrast" ></link>
+<link href="print.css" rel="stylesheet" media="print" ></link>
+<link
+  href="mobile.css"
+  rel="stylesheet"
+  media="screen and (max-width: 600px)" ></link>
+
+<!-- fun with icons -->
+<link rel="icon" href="favicon.ico" ></link>
+<link
+  rel="apple-touch-icon"
+  sizes="114x114"
+  href="apple-icon-114.png"
+  type="image/png" ></link>
+
+
+<!-- ref: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link -->
+```
+</div>
+
+<aside class="notes"></aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## The `rel` attribute
+> The **`rel`** attribute defines the relationship between a linked resource and the current document.<br></br>
+<span>[-- MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel)</span><!-- .element: style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-evenly" align="right" -->
+
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->[`alternate`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#alternate) - Alternate representations of the current document.
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->[`author`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#author) - Author of the current document or article.
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->[`canonical`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#canonical) - Preferred URL for the current document.
+- &shy;<!-- .element: class="fragment" data-fragment-index="4" -->[`dns-prefetch`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/dns-prefetch) - Tells the browser to preemptively perform DNS resolution for the target resource's origin.
+- &shy;<!-- .element: class="fragment" data-fragment-index="5" -->[`expect`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#expect) Allows the page to be [render-blocked](https://developer.mozilla.org/en-US/docs/Glossary/Render_blocking) until the essential parts of the document are parsed *
+- &shy;<!-- .element: class="fragment" data-fragment-index="6" -->[`help`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#help) - Link to context-sensitive help.
+- &shy;<!-- .element: class="fragment" data-fragment-index="7" -->[`icon`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#icon) - An icon representing the current document.
+- &shy;<!-- .element: class="fragment" data-fragment-index="8" -->[`license`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#license) - Reference link for copyright license info
+- &shy;<!-- .element: class="fragment" data-fragment-index="9" -->[`manifest`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/manifest) - Web app manifest.
+- &shy;<!-- .element: class="fragment" data-fragment-index="10" -->[`next`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#next) - Indicates that the current document is a part of a series and that the next document in the series is the referenced document.
+- &shy;<!-- .element: class="fragment" data-fragment-index="11" -->[`pingback`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#pingback) - Pingback is a method for web authors to request notification when somebody links to one of their documents
+- &shy;<!-- .element: class="fragment" data-fragment-index="12" -->[`preconnect`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preconnect) - A hint to browsers that the user is likely to need resources from the target resource's origin, and therefore the browser can preemptively initiating a connection to that origin.
+- &shy;<!-- .element: class="fragment" data-fragment-index="13" -->[`prev`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#prev) - Indicates that the current document is a part of a series and that the previous document in the series is the referenced document.
+- &shy;<!-- .element: class="fragment" data-fragment-index="14" -->[`privacy-policy`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#privacy-policy) - Gives a link to a information about the data collection and usage practices that apply to the current document.
+- &shy;<!-- .element: class="fragment" data-fragment-index="15" -->[`search`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#search) - Gives a link to a resource that can be used to search through the current document and its related pages.
+- &shy;<!-- .element: class="fragment" data-fragment-index="16" -->[`stylesheet`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#stylesheet) - Imports a style sheet.
+- &shy;<!-- .element: class="fragment" data-fragment-index="17" -->[`terms-of-service`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#terms-of-service) - Link to the agreement, or terms of service, between the document's provider and users who wish to use the document.
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## The power of `rel=preload`
+```html
+<head>
+  <meta charset="utf-8" ></meta>
+  <title>Image preload example</title>
+
+  <link rel="preload" href="flower.avif" as="image" type="image/avif" ></link>
+</head>
+<body>
+  <picture>
+    <source src="flower.avif" type="image/avif" ></source>
+    <source src="flower.webp" type="image/webp" ></source>
+    <img src="flower.jpg" ></img>
+  </picture>
+</body>
+
+<!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload-->
+```
+</div>
+
+<aside class="notes"><p>A particularly useful link relationship is preload. You can use this to define assets or other fetch requests that you know will be coming down the line and basically you&#39;re giving the browser a heads-up that you&#39;ll be needing it. So it&#39;ll be available to the page when it gets around to rendering the actual HTML.</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## What can be preloaded?
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->`fetch` - resource to be accessed by a fetch or XHR request, such as an ArrayBuffer, WebAssembly binary, or JSON file.
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->`font` - fonts (useful when defined as font-faces)
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->`image` - images
+- &shy;<!-- .element: class="fragment" data-fragment-index="4" -->`script` - JavaScript files
+- &shy;<!-- .element: class="fragment" data-fragment-index="5" -->`style` - CSS stylesheets
+- &shy;<!-- .element: class="fragment" data-fragment-index="6" -->`track` - WebVTT (Web Video Text Tracks)
+</div></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## The power of `rel=`***`module`***`preload`
+```html 
+<link rel="modulepreload" ... ></link>
+``` 
+when consuming [JavaScript modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+</div>
+
+<aside class="notes"><p>Javascript modules are how more complex applications are shipped to users that endeavor to serve the application as individual chunks of files and is basically what webpack is doing for you. (NEEDS REFINING)</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## The power of `rel=prefetch`* 
+
+```html
+<link rel="prefetch" src="the-next-pages-javascript.js" ... ></link>
+<link rel="prefetch" src="the-next-pages-image.jpg" ... ></link>
+
+<!-- ref https://www.smashingmagazine.com/2016/02/preload-what-is-it-good-for/ -->
+```
+*not supported in safari without enabling a developer flag 🫠
+</div>
+
+<aside class="notes"><p>prefetch is a directive that tells a browser to <strong>fetch a resource that will probably be needed</strong> for the next navigation. That mostly means that the resource will be fetched with extremely low priority (since everything the browser <em>knows</em> is needed in the current page is more important than a resource that we <em>guess</em> might be needed in the next one).</p>
+</aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Other `<link>` attributes
+- &shy;<!-- .element: class="fragment" data-fragment-index="1" -->`blocking` - indicates certain operations that should be blocked while fetching an external resource - no firefox support
+- &shy;<!-- .element: class="fragment" data-fragment-index="2" -->`crossorigin` - indicates whether it's fetching as a [CORS](https://developer.mozilla.org/en-US/docs/Glossary/CORS) request or not
+- &shy;<!-- .element: class="fragment" data-fragment-index="3" -->`disabled` - used to turn on/off individual stylesheets
+- &shy;<!-- .element: class="fragment" data-fragment-index="4" -->`fetchpriorty` - high/low/auto
+- &shy;<!-- .element: class="fragment" data-fragment-index="5" -->`integrity` - a base64-encoded cryptographic hash used to verify that the fetched resource has been delivered without unexpected manipulation
+- &shy;<!-- .element: class="fragment" data-fragment-index="6" -->`media` - specifies the media type/query that the linked resource applies to
+- &shy;<!-- .element: class="fragment" data-fragment-index="7" -->`size/imagesizes` - defines the sizes of preloaded images and icons
+- &shy;<!-- .element: class="fragment" data-fragment-index="8" -->`title` - used to differentiate alternate stylesheets - only supported by firefox and specific browser extensions
+</div></script></section></section></div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script src="plugin/zoom/zoom.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/math/math.js"></script>
+	<script src="plugin/mermaid/mermaid.js"></script>
+	<script src="plugin/chart/chart.min.js"></script>
+	<script src="plugin/chart/plugin.js"></script>
+	<script src="plugin/menu/menu.js"></script>
+	<script src="plugin/customcontrols/plugin.js"></script>
+
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+	  function isLight(color) {
+		let hex = color.replace('#', '');
+
+		// convert #fff => #ffffff
+		if(hex.length == 3){
+			hex = `${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+		}
+
+		const c_r = parseInt(hex.substr(0, 2), 16);
+		const c_g = parseInt(hex.substr(2, 2), 16);
+		const c_b = parseInt(hex.substr(4, 2), 16);
+		const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+		return brightness > 155;
+	}
+
+	var bgColor = getComputedStyle(document.documentElement).getPropertyValue('--r-background-color').trim();
+	var isLight = isLight(bgColor);
+
+	if(isLight){
+		document.body.classList.add('has-light-background');
+	} else {
+		document.body.classList.add('has-dark-background');
+	}
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath.MathJax3,
+		  RevealMermaid,
+		  RevealChart,
+		  RevealCustomControls,
+		  RevealMenu,
+        ],
+
+
+    	allottedTime: 120 * 1000,
+
+		mathjax3: {
+			mathjax: 'plugin/math/mathjax/tex-mml-chtml.js',
+		},
+		markdown: {
+		  gfm: true,
+		  mangle: true,
+		  pedantic: false,
+		  smartLists: false,
+		  smartypants: false,
+		},
+
+		mermaid: {
+			theme: isLight ? 'default' : 'dark',
+		},
+
+		customcontrols: {
+			controls: [
+				{id: 'toggle-overview',
+				title: 'Toggle overview (O)',
+				icon: '<i class="fa fa-th"></i>',
+				action: 'Reveal.toggleOverview();'
+				},
+			]
+		},
+		menu: {
+			loadIcons: false
+		}
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"width":960,"height":700,"margin":0.04,"controls":true,"progress":true,"slideNumber":false,"transition":"slide","transitionSpeed":"default"}, queryOptions);
+    </script>
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+
+  <!-- created with Advanced Slides -->
+</html>
