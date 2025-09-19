@@ -111,13 +111,13 @@
 </style>
 # What's In Your \<head>? 
 ## Defining and targeting link previews
-[cascadia-2025.gregle.dev](https://cascadia-2025.gregle.dev)
-
 👋 Justin Rastelli -- [gregle.dev](https://www.gregle.dev)
+
+📽️ Slides -- [cascadia-2025.gregle.dev](https://cascadia-2025.gregle.dev)
 </div>
 
 <aside class="notes"><p>Hey everyone, thanks for being here.</p>
-<p>So for some context, at the start of the year I wanted to learn more about how link previews are defined and the differences in how various platforms handle them. Specifically, I was exploring the possibility of showing different preview content based on where a link had been posted. And to spoil the ending a little, for the most part I learned that you can&#39;t do it. Except there is one particular platform where, with the right set up, you totally can. So today I&#39;m going to share some of those learnings, starting with some basics, hit on general best practices, and then highlight the one platform you can explicitly target.</p>
+<p>So at the start of the year I decided to learn more about link previews. Both how to define them, and the differences in how various platforms handle them. Specifically, I was exploring the possibility of showing different preview content based on where a link has been posted. And to spoil the ending a little, for the most part I learned that you can&#39;t do it. Except for one particular platform, where, with the right set up, you totally can. So today I&#39;m going to share some of those learnings, start with some basics, hit on general best practices, and then highlight the one platform you can explicitly target.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -173,7 +173,7 @@ https://metatags.gregle.dev/
 </div>
 </div>
 
-<aside class="notes"><p>As part of this effort, I set up a quick and dirty Svelte project where every route had a different set of meta tags defining ever more complex preview data. That way I could easily post each link to different platforms and then compare the resulting previews.</p>
+<aside class="notes"><p>As part of this learning effort, I set up a quick and dirty Svelte project where every route had a different set of meta tags building upon each other and defining ever more complex preview data. That way I could easily post each link to different platforms and compare the resulting previews.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -232,7 +232,7 @@ https://metatags.gregle.dev/
 </split>
 </div>
 
-<aside class="notes"><p>And to no real surprise, the title shows up when the link is posted. One interesting thing I found was that occasionally the associated web crawler would proactively parse the topmost <code>&lt;p&gt;</code> or <code>&lt;img&gt;</code> element in order to fill in missing data. One such example is the instagram mobile app. Which I thought was especially funny because the Instagram browser client never surfaced a description, regardless of how it was defined. This serves to emphasize that even between a platform&#39;s entry points there are differences in implementation.</p>
+<aside class="notes"><p>And to no real surprise, the title shows up when the link is posted. One interesting thing I found was that occasionally the associated web crawler would proactively parse the topmost <code>&lt;p&gt;</code> or <code>&lt;img&gt;</code> element in order to fill in missing data. One such example is the instagram mobile app. Which I thought was especially funny because the Instagram browser client never surfaces a description, regardless of how it&#39;s defined. This serves to emphasize that even between a platform&#39;s entry points there are differences in implementation.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -295,7 +295,7 @@ https://metatags.gregle.dev/
 </split>
 </div>
 
-<aside class="notes"><p>The learnings from this test was some apps like Bluesky and Discord preserve inline formatting. Such as line breaks, when most other platforms ignored it. And then some apps, like signal, simply ignored the basic HTML description tag. You can also see Instagram mobile is now using the defined description rather than the top most paragraph tag.</p>
+<aside class="notes"><p>The learnings from this test was some apps like Bluesky and Discord preserve inline formatting. Such as line breaks, when most other platforms ignore it. And then some apps, like signal, simply disregarded the basic HTML description tag altogether. You can also see Instagram mobile is now using the defined description rather than the top most paragraph tag.</p>
 <p>And that pretty much covers the basic HTML ways to impact link previews. It&#39;s primarily just the title and description tags. For more interesting and complex setups we need to turn something called The Open Graph Protocol.</p>
 </aside></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
@@ -307,7 +307,7 @@ https://metatags.gregle.dev/
 https://ogp.me/
 </div>
 
-<aside class="notes"><p>Defined by <a href="https://www.cnet.com/culture/facebook-f8-one-graph-to-rule-them-all/%5D">Facebook in 2010</a> this spec allows us to more thoroughly describe our page and content and has been widely adopted by most platforms and apps and is considered best practice for defining your preview content.</p>
+<aside class="notes"><p>Defined by <a href="https://www.cnet.com/culture/facebook-f8-one-graph-to-rule-them-all/%5D">Facebook in 2010</a> this spec allows us to more thoroughly describe our page and content and has been widely adopted by most platforms and apps and is considered best practice for defining your content for the social web.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -386,7 +386,7 @@ https://ogp.me/
 </div>
 
 <aside class="notes"><p>From this setup it’s worth noting that the browser tabs will still use the standard HTML <code>title</code> tags while the link previews prioritize the open graph definitions. This allows you to specify different titles for link previews than those used in your browser tabs. This cascading prioritization applies to most of these properties and can be incredibly useful as we&#39;ll see later on.</p>
-<p>Also note that, now signal is showing a proper description field based on the open graph definition.</p>
+<p>Also note that, now signal is showing a description field based on the open graph definition.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -555,8 +555,8 @@ https://ogp.me/
 </div>
 </div>
 
-<aside class="notes"><p>In my testing, only Discord allowed direct video playback in the link preview, while the rest fell back to the image tag. And that&#39;s all the open graph types I have time to go to go into today. There&#39;s a bunch of other types you can try out including audio tags and the like, but most all render the same with just a title, description, and image. </p>
-<p>Now Twitter there is our special case, it doesn&#39;t support video playback via the Open graph video tags, but it is able to play a video in a preview via a different kind of meta tag setup. </p>
+<aside class="notes"><p>In my testing, only Discord allowed direct video playback in the link preview, while the rest fell back to the image tag. And that&#39;s all the open graph types I have time to go to go into today. There&#39;s a bunch of other types you can try out including audio tags and the like, but most all render the same in previews with just a title, description, and image. </p>
+<p>Now Twitter there is our special case, it doesn&#39;t support video playback via the Open graph tags, but it is able to play a video in a preview via a different kind of meta tag setup. </p>
 <p>And that little aside, leads me perfectly to the one platform you can directly target with specific content. While also serving as the zombie to complete the Cranberries reference from the talk title.</p>
 </aside></script></section></section><section ><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
@@ -686,7 +686,7 @@ content="Twitter - summary test - Twitter Description"></meta>
 </split>
 </div>
 
-<aside class="notes"><p>But keep in mind, other apps can also key off of these twitter based meta tags. Like Discord for example. I actually think this makes the summary card, one of the more useful twitter specific tags, regardless of how much you care about accommodating the Twitter audience. As other platforms can also show a larger or smaller preview image depending on its value.</p>
+<aside class="notes"><p>But keep in mind, other apps can also key off of these twitter based metadata. Like Discord for example. I actually think this makes the summary card, one of the more useful twitter specific tags, regardless of how much you care about accommodating the Twitter audience. As other platforms can also show a larger or smaller preview image depending on its value.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -702,7 +702,7 @@ content="Twitter - summary test - Twitter Description"></meta>
 </split>
 </div>
 
-<aside class="notes"><p>Messing around with the twitter tags also taught me that order matters. Again, we have no control over the receiving web scrapper. So depending on how it&#39;s implemented, it&#39;ll either take the first set of metatag it sees, or the last, or it could even alphabetize them first or do something even weirder with it. For example, looking at Discord again while stacking different open graph and twitter tags for title and description, it always takes the top most defined tag on the page, regardless of prefix.</p>
+<aside class="notes"><p>Messing around with the twitter tags also taught me that order matters. Again, we have no control over the receiving web scrapper. So depending on how it&#39;s implemented, it&#39;ll either take the first set of metadata it sees, or the last, or it could even alphabetize them first or do something even weirder with it. For example, looking at Discord again while stacking different open graph and twitter tags for title and description, it always takes the top most defined tag on the page, regardless of prefix.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -781,7 +781,8 @@ content="Twitter - summary test - Twitter Description"></meta>
 </div><!-- .element: class="fragment fade-in" -->
 </div>
 
-<aside class="notes"><p>So now a link with this kind of setup, can then show up one way on all other platforms. While rendering an entirely different message on twitter. And this concept works for other types of content too. Earlier I had mentioned there&#39;s a way to play video content directly in the twitter preview, well that brings us to the next type of card, the Player card.</p>
+<aside class="notes"><p>So now a link with this kind of setup, can then show up one way on all other platforms. While rendering an entirely different message on twitter. </p>
+<p>And this concept works for other types of content too. Earlier I had mentioned there&#39;s a way to play video content directly in the twitter preview, well that brings us to the next type of card, the Player card.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -907,7 +908,7 @@ content="Twitter - summary test - Twitter Description"></meta>
 </div>
 </div>
 
-<aside class="notes"><p>For reasons I don&#39;t understand, Microsoft Teams is sniffing specifically for the twitter tag, above all other combinations of metadata. I have no idea why this is, I can&#39;t think of a good reason for it, and even tried asking why at least three separate times in the dev forums to no avail.</p>
+<aside class="notes"><p>For reasons I don&#39;t understand, Microsoft Teams is sniffing specifically for the twitter tags, above all other combinations of metadata. I have no idea why this is, I can&#39;t think of a good reason for it, and even tried asking why at least three separate times in the dev forums to no avail.</p>
 <p>So if anyone here knows some people on the Microsoft Teams… uh team… please ask them why they would do this.</p>
 <p>I did eventually figure out a workaround that prevented leakage.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
@@ -937,7 +938,7 @@ content="Twitter - summary test - Twitter Description"></meta>
 ```
 </div>
 
-<aside class="notes"><p>You can avoid needing to sandwich your tags entirely so long as you only specify twitter specific functionality (IE the player card) in the twitter specific meta tags. In this example you can see I have my open graph tags, and then the twitter specific content. There&#39;s no overlap between them, and no need for duplication because no other platform has a concept of a player card, so with just five lines I&#39;m able to send specific content to anyone who posts or interacts with my links on twitter.</p>
+<aside class="notes"><p>You can avoid needing to sandwich your tags entirely so long as you only specify twitter specific functionality (IE the player card) in the twitter specific meta tags. In this example you can see I have my open graph tags, and then the content for twitter. There&#39;s no overlap between them, and no need for duplication because no other platform has a concept of a player card, so with just five lines I&#39;m able to send specific content to anyone who posts or interacts with my links on twitter.</p>
 </aside></script></section><section data-markdown><script type="text/template"><!-- .slide: class="drop" data-auto-animate="true" -->
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
@@ -1043,9 +1044,9 @@ content="Twitter - summary test - Twitter Description"></meta>
 <div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
 
 # Thank you💜
-[cascadia-2025.gregle.dev](https://cascadia-2025.gregle.dev)
-
 Justin Rastelli -- [gregle.dev](https://www.gregle.dev)
+
+📽️ Slides -- [cascadia-2025.gregle.dev](https://cascadia-2025.gregle.dev)
 </div>
 
 <aside class="notes"><p>And otherwise thank you, the slides and code snippets can be found at this URL and on my website, and I hope you all build and share something that excites you soon. Thank you.</p>
@@ -1500,7 +1501,7 @@ when consuming [JavaScript modules](https://developer.mozilla.org/en-US/docs/Web
       // options from URL query string
       var queryOptions = Reveal().getQueryHash() || {};
 
-      var options = extend(defaultOptions, {"width":960,"height":700,"margin":0.04,"controls":true,"progress":true,"slideNumber":false,"transition":"slide","transitionSpeed":"default"}, queryOptions);
+      var options = extend(defaultOptions, {"width":960,"height":700,"margin":0.04,"controls":true,"progress":false,"slideNumber":false,"transition":"slide","transitionSpeed":"default"}, queryOptions);
     </script>
 
     <script>
